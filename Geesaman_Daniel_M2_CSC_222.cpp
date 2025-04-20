@@ -12,30 +12,86 @@ double gradeAvg[99];
 char gradeLetter[99];
 string processingString;
 
+struct student {
+	string studentName;
+	int studentId;
+	int studentGrades[99];
+	char gradeLetter;
+};
 
-int fhandle(string studentNames[], int studentGrades[][99]);
+struct student students[99];
+
+//int fhandle(string studentNames[], int studentGrades[][99]);
 void calcAvg(int studentGrades[][99], int totalNames, double gradeAvg[]);
 void calcLtrGrade(double gradeAvg[], char gradeLetter[], int totalNames);
 void printReport(string studentNames[], char gradeLetter[], int totalNames);
 
+student* getData(fstream& file, int& studentCnt, int& testsCnt);
+
 int main()
 {
-	int totalNames;
+	int numberOfStudents = 0;
+	int testsTaken = 0;
 
-	totalNames = fhandle(studentNames, studentGrades);
-	calcAvg(studentGrades, totalNames, gradeAvg);
-	calcLtrGrade(gradeAvg, gradeLetter, totalNames);
-	printReport(studentNames, gradeLetter, totalNames);
-	/*
-	this is a data test loop
+	int names = 0;
+	fstream file;
+	file.open("StudentTestData.txt");
+	if (file.is_open())
+	{
+		getData(file, numberOfStudents, testsTaken);
+		cout << numberOfStudents << " " << testsTaken;
+	}
+	else {
+		cout << "file failed to open";
+	}
 
-	for (int i = 0; i < 99; i++) {
-		cout << gradeLetter[i];
-	}*/
+	//calcAvg(studentGrades, totalNames, gradeAvg);
+	//calcLtrGrade(gradeAvg, gradeLetter, totalNames);
+	//printReport(studentNames, gradeLetter, totalNames);
 	return 0;
 }
 
-int fhandle(string studentNames[], int studentGrades[][99])
+student* getData(fstream& file, int& studentCnt, int& testsCnt)
+{
+	getline(file, processingString);
+	int pos = processingString.find(' ');
+	cout << "here1";
+	studentCnt = stoi(processingString.substr(0, pos));
+	processingString.erase(0, pos + 1);
+	pos = processingString.find(' ');
+	testsCnt = stoi(processingString.substr(0, pos));
+	cout << studentCnt << " " << testsCnt;
+	while (not file.eof())
+	{
+		getline(file, processingString);
+		int pos = processingString.find(' ');
+
+		while (pos != string::npos)
+		{
+			for (int i = 0; i < studentCnt; i++)
+			{
+				students[i].studentName = stoi(processingString.substr(0, pos));
+				processingString.erase(0, pos + 1);
+				pos = processingString.find(' ');
+				students[i].studentId = stoi(processingString.substr(0, pos));
+				processingString.erase(0, pos + 1);
+				pos = processingString.find(' ');
+				for (int j = 0; j < testsCnt; j++)
+				{
+					students[i].studentGrades[j] = stoi(processingString.substr(0, pos));
+					processingString.erase(0, pos + 1);
+					pos = processingString.find(' ');
+				}
+				/*if (pos == -1) {
+					studentGrades[0][grades] = stoi(processingString);
+				}*/
+			}
+		}
+	}
+	return students;
+}
+
+/*int fhandle(string studentNames[], int studentGrades[][99])
 {
 	int names = 0;
 	fstream file;
@@ -74,7 +130,7 @@ int fhandle(string studentNames[], int studentGrades[][99])
 		cout << "file failed to open";
 
 	return names;
-}
+}*/
 
 void calcAvg(int studentGrades[][99], int totalNames, double gradeAvg[])
 {
