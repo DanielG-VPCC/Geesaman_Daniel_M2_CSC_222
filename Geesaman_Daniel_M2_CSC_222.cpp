@@ -1,30 +1,29 @@
 // Geesaman_Daniel_M1_CSC_222.cpp : This file contains the 'main' function.
-//
+
+/*
+This program reads a file that has names, student IDs, and grades and outputs a list of how well each student did in the class.
+This program uses structs to accomplish this.
+*/
 
 #include <iostream>
 #include <fstream>
 #include <string>
 using namespace std;
 
-string studentNames[99];
-int studentGrades[99][99];
-double gradeAvg[99];
-char gradeLetter[99];
-string processingString;
-
 struct student {
 	string studentName;
 	int studentId;
 	int studentGrades[99];
+	double gradeAvg;
 	char gradeLetter;
 };
 
-struct student students[99];
+string processingString;
+student students[99];
 
-//int fhandle(string studentNames[], int studentGrades[][99]);
-void calcAvg(int studentGrades[][99], int totalNames, double gradeAvg[]);
-void calcLtrGrade(double gradeAvg[], char gradeLetter[], int totalNames);
-void printReport(string studentNames[], char gradeLetter[], int totalNames);
+void calcAvg(int& studentCnt, int& testsCnt);
+void calcLtrGrade(int& studentCnt, int& testsCnt);
+void printReport(int& studentCnt, int& testsCnt);
 
 student* getData(fstream& file, int& studentCnt, int& testsCnt);
 
@@ -39,112 +38,77 @@ int main()
 	if (file.is_open())
 	{
 		getData(file, numberOfStudents, testsTaken);
-		cout << numberOfStudents << " " << testsTaken;
 	}
 	else {
 		cout << "file failed to open";
 	}
 
-	//calcAvg(studentGrades, totalNames, gradeAvg);
-	//calcLtrGrade(gradeAvg, gradeLetter, totalNames);
-	//printReport(studentNames, gradeLetter, totalNames);
+	calcAvg(numberOfStudents, testsTaken);
+	calcLtrGrade(numberOfStudents, testsTaken);
+	printReport(numberOfStudents, testsTaken);
 	return 0;
 }
 
+/*
+This function requires a file and studentCnt and testsCnt pointers. The preconditions are that the file must be opened,
+studentCnt and testCnt must be initialized. The postcondition is that the function will return the students struct to the main function.
+*/
 student* getData(fstream& file, int& studentCnt, int& testsCnt)
 {
 	getline(file, processingString);
 	int pos = processingString.find(' ');
-	cout << "here1";
 	studentCnt = stoi(processingString.substr(0, pos));
 	processingString.erase(0, pos + 1);
 	pos = processingString.find(' ');
 	testsCnt = stoi(processingString.substr(0, pos));
-	cout << studentCnt << " " << testsCnt;
+	int i = 0;
 	while (not file.eof())
 	{
 		getline(file, processingString);
 		int pos = processingString.find(' ');
-
-		while (pos != string::npos)
+		students[i].studentName = processingString.substr(0, pos);
+		processingString.erase(0, pos + 1);
+		pos = processingString.find(' ');
+		students[i].studentId = stoi(processingString.substr(0, pos));
+		processingString.erase(0, pos + 1);
+		pos = processingString.find(' ');
+		for (int j = 0; j < testsCnt; j++)
 		{
-			for (int i = 0; i < studentCnt; i++)
-			{
-				students[i].studentName = stoi(processingString.substr(0, pos));
-				processingString.erase(0, pos + 1);
-				pos = processingString.find(' ');
-				students[i].studentId = stoi(processingString.substr(0, pos));
-				processingString.erase(0, pos + 1);
-				pos = processingString.find(' ');
-				for (int j = 0; j < testsCnt; j++)
-				{
-					students[i].studentGrades[j] = stoi(processingString.substr(0, pos));
-					processingString.erase(0, pos + 1);
-					pos = processingString.find(' ');
-				}
-				/*if (pos == -1) {
-					studentGrades[0][grades] = stoi(processingString);
-				}*/
-			}
+			students[i].studentGrades[j] = stoi(processingString.substr(0, pos));
+			processingString.erase(0, pos + 1);
+			pos = processingString.find(' ');
 		}
+		i++;
 	}
 	return students;
 }
 
-/*int fhandle(string studentNames[], int studentGrades[][99])
-{
-	int names = 0;
-	fstream file;
-	file.open("StudentGrades.txt");
-	if (file.is_open())
-	{
-		while (not file.eof())
-		{
-			getline(file, processingString);
-			int pos = processingString.find(' ');
-			while (pos != string::npos)
-			{
-				int grades = 1;
-				studentNames[names] = processingString.substr(0, pos);
-				processingString.erase(0, pos + 1);
-				pos = processingString.find(' ');
-				while (pos != string::npos)
-				{
-					studentGrades[names][grades] = stoi(processingString.substr(0, pos));
-					processingString.erase(0, pos + 1);
-					pos = processingString.find(' ');
-					//cout << studentGrades[names][grades];
-					grades++;
-					if (pos == -1) {
-						studentGrades[names][grades] = stoi(processingString);
-						//cout << studentGrades[names][grades];
-					}
-				}
-				//cout << studentNames[names];
-				studentGrades[names][0] = grades;
-				names++;
-			}
-		}
-	}
-	else
-		cout << "file failed to open";
-
-	return names;
-}*/
-
-void calcAvg(int studentGrades[][99], int totalNames, double gradeAvg[])
+/*
+This function accepts the studentCnt and testsCnt pointers. The preconditions are that the studentCnt and testsCnt variables
+must be initialized and populated with the data found on the first line of the file, the students struct must also be global and
+populated with data found in the file. The postcondition is that the grade average of each of the students will be placed within their
+respective students[].gradeAvg slot.
+*/
+void calcAvg(int& studentCnt, int& testsCnt)
 {
 	double total = 0;
-	for (int i = 0; i < totalNames; i++) {
+	for (int i = 0; i < studentCnt; i++) {
 		total = 0;
-		for (int j = 1; j < 99; j++) {
-			total = total + studentGrades[i][j];
+		for (int j = 0; j < testsCnt; j++) {
+			total = total + students[i].studentGrades[j];
 		}
-		gradeAvg[i] = total / (studentGrades[i][0]);
+		students[i].gradeAvg = total / testsCnt;
 	}
 }
 
 /*
+The calcLtrGrade function accepts the studentCnt and testsCnt pointers.
+The preconditions are that the studentCnt and testsCnt variables must be initialized and populated with the data found on the first line of the file,
+and the students[].gradeAvg struct must have been filled with a value.
+The postcondition is that the students[].gradeLetter struct will be filled with a letter grade representing the input students[].gradeAvg value
+for each student.
+
+
 when calculating letter grades, I was a little unsure as to where to break the values because
 the chart we were given in the instructions does not use inclusive values.
 
@@ -152,35 +116,45 @@ I broke it up so that the letter grades are bounded by intervals of 10, I just w
 bounded on 59 69 79 89 as opposed to 60 70 80 90.
 */
 
-void calcLtrGrade(double gradeAvg[], char gradeLetter[], int totalNames)
+void calcLtrGrade(int& studentCnt, int& testsCnt)
 {
-	for (int i = 0; i < totalNames; i++) {
-		if (90.0 <= gradeAvg[i])
+	for (int i = 0; i < studentCnt; i++) {
+		if (90.0 <= students[i].gradeAvg)
 		{
-			gradeLetter[i] = 'A';
+			students[i].gradeLetter = 'A';
 		}
-		else if (80.0 <= gradeAvg[i])
+		else if (80.0 <= students[i].gradeAvg)
 		{
-			gradeLetter[i] = 'B';
+			students[i].gradeLetter = 'B';
 		}
-		else if (70.0 <= gradeAvg[i])
+		else if (70.0 <= students[i].gradeAvg)
 		{
-			gradeLetter[i] = 'C';
+			students[i].gradeLetter = 'C';
 		}
-		else if (60.0 <= gradeAvg[i])
+		else if (60.0 <= students[i].gradeAvg)
 		{
-			gradeLetter[i] = 'D';
+			students[i].gradeLetter = 'D';
 		}
 		else
-			gradeLetter[i] = 'F';
+			students[i].gradeLetter = 'F';
 	}
 }
 
-void printReport(string studentNames[], char gradeLetter[], int totalNames)
+/*
+The printReport function accepts the studentCnt and testsCnt variables.
+The preconditions are that the studentCnt and testsCnt variables must be initialized and populated with the data found on the first line of the file,
+and the students struct must have all its slots filled with a value.
+The postcondition of this function is that it will use the studentName, studentId, gradeAvg, and gradeLetter slots of the students struct to output
+a report showing the name, id, avg score, and grade for each student found in the file.
+*/
+
+void printReport(int& studentCnt, int& testsCnt)
 {
+	cout << endl;
 	cout << "Student Letter Grades for your class:" << endl << endl;
-	for (int i = 0; i < totalNames; i++)
+	cout << "Student" << "    " << "ID" << "    " << "Score" << "    " << "Grade" << endl;
+	for (int i = 0; i < studentCnt; i++)
 	{
-		cout << studentNames[i] << ": " << gradeLetter[i] << endl;
+		cout << students[i].studentName << "    " << students[i].studentId << "    " << students[i].gradeAvg << "    " << students[i].gradeLetter << endl;
 	}
 }
