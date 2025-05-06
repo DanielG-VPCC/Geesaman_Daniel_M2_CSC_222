@@ -8,44 +8,41 @@ This program uses structs to accomplish this.
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <iomanip>
 using namespace std;
 
 struct student {
 	string studentName;
 	int studentId;
-	int studentGrades[99];
+	int* studentGrades = new int[99];
 	double gradeAvg;
 	char gradeLetter;
 };
 
-string processingString;
-student students[99];
-
-void calcAvg(int& studentCnt, int& testsCnt);
-void calcLtrGrade(int& studentCnt, int& testsCnt);
-void printReport(int& studentCnt, int& testsCnt);
-
-student* getData(fstream& file, int& studentCnt, int& testsCnt);
+void calcAvg(student students[], int& studentCnt, int& testsCnt);
+void calcLtrGrade(student students[], int& studentCnt, int& testsCnt);
+void printReport(student students[], int& studentCnt, int& testsCnt);
+student *getData(fstream& file, int& studentCnt, int& testsCnt);
 
 int main()
 {
 	int numberOfStudents = 0;
 	int testsTaken = 0;
-
+	
 	int names = 0;
 	fstream file;
 	file.open("StudentTestData.txt");
 	if (file.is_open())
 	{
-		getData(file, numberOfStudents, testsTaken);
+		student *stud = getData(file, numberOfStudents, testsTaken);
+		calcAvg(stud, numberOfStudents, testsTaken);
+		calcLtrGrade(stud, numberOfStudents, testsTaken);
+		printReport(stud, numberOfStudents, testsTaken);
+		delete[] stud;
 	}
 	else {
 		cout << "file failed to open";
 	}
-
-	calcAvg(numberOfStudents, testsTaken);
-	calcLtrGrade(numberOfStudents, testsTaken);
-	printReport(numberOfStudents, testsTaken);
 	return 0;
 }
 
@@ -53,30 +50,33 @@ int main()
 This function requires a file and studentCnt and testsCnt pointers. The preconditions are that the file must be opened,
 studentCnt and testCnt must be initialized. The postcondition is that the function will return the students struct to the main function.
 */
-student* getData(fstream& file, int& studentCnt, int& testsCnt)
+student *getData(fstream& file, int& studentCnt, int& testsCnt)
 {
-	getline(file, processingString);
-	int pos = processingString.find(' ');
-	studentCnt = stoi(processingString.substr(0, pos));
-	processingString.erase(0, pos + 1);
-	pos = processingString.find(' ');
-	testsCnt = stoi(processingString.substr(0, pos));
+	string pString;
+	student* students = new student[99];
+	
+	getline(file, pString);
+	int pos = pString.find(' ');
+	studentCnt = stoi(pString.substr(0, pos));
+	pString.erase(0, pos + 1);
+	pos = pString.find(' ');
+	testsCnt = stoi(pString.substr(0, pos));
 	int i = 0;
 	while (not file.eof())
 	{
-		getline(file, processingString);
-		int pos = processingString.find(' ');
-		students[i].studentName = processingString.substr(0, pos);
-		processingString.erase(0, pos + 1);
-		pos = processingString.find(' ');
-		students[i].studentId = stoi(processingString.substr(0, pos));
-		processingString.erase(0, pos + 1);
-		pos = processingString.find(' ');
+		getline(file, pString);
+		int pos = pString.find(' ');
+		students[i].studentName = pString.substr(0, pos);
+		pString.erase(0, pos + 1);
+		pos = pString.find(' ');
+		students[i].studentId = stoi(pString.substr(0, pos));
+		pString.erase(0, pos + 1);
+		pos = pString.find(' ');
 		for (int j = 0; j < testsCnt; j++)
 		{
-			students[i].studentGrades[j] = stoi(processingString.substr(0, pos));
-			processingString.erase(0, pos + 1);
-			pos = processingString.find(' ');
+			students[i].studentGrades[j] = stoi(pString.substr(0, pos));
+			pString.erase(0, pos + 1);
+			pos = pString.find(' ');
 		}
 		i++;
 	}
@@ -89,7 +89,7 @@ must be initialized and populated with the data found on the first line of the f
 populated with data found in the file. The postcondition is that the grade average of each of the students will be placed within their
 respective students[].gradeAvg slot.
 */
-void calcAvg(int& studentCnt, int& testsCnt)
+void calcAvg(student students[], int& studentCnt, int& testsCnt)
 {
 	double total = 0;
 	for (int i = 0; i < studentCnt; i++) {
@@ -116,7 +116,7 @@ I broke it up so that the letter grades are bounded by intervals of 10, I just w
 bounded on 59 69 79 89 as opposed to 60 70 80 90.
 */
 
-void calcLtrGrade(int& studentCnt, int& testsCnt)
+void calcLtrGrade(student students[], int& studentCnt, int& testsCnt)
 {
 	for (int i = 0; i < studentCnt; i++) {
 		if (90.0 <= students[i].gradeAvg)
@@ -148,13 +148,13 @@ The postcondition of this function is that it will use the studentName, studentI
 a report showing the name, id, avg score, and grade for each student found in the file.
 */
 
-void printReport(int& studentCnt, int& testsCnt)
+void printReport(student students[], int& studentCnt, int& testsCnt)
 {
 	cout << endl;
 	cout << "Student Letter Grades for your class:" << endl << endl;
-	cout << "Student" << "    " << "ID" << "    " << "Score" << "    " << "Grade" << endl;
+	cout << "Student" << setw(10) << "ID" << setw(10) << "Score" << setw(10) << "Grade" << endl;
 	for (int i = 0; i < studentCnt; i++)
 	{
-		cout << students[i].studentName << "    " << students[i].studentId << "    " << students[i].gradeAvg << "    " << students[i].gradeLetter << endl;
+		cout << students[i].studentName << setw(10) << students[i].studentId << setw(10) << students[i].gradeAvg << setw(10) << students[i].gradeLetter << endl;
 	}
 }
