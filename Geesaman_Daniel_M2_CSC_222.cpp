@@ -4,12 +4,18 @@
 #include <iostream>
 using namespace std;
 
-int sizeArr = 10;
-int const arr[] = { 1,2,3,4,5,6,7,8,9,10 };
-
 //these are my function prototypes
 int* reverseArray(int const arr[], int sizeArr);
 void print(int const arr[], int sizeArr);
+
+int main()
+{
+    int sizeArr = 10;
+    int const arr[] = { 1,2,3,4,5,6,7,8,9,10 };
+
+    int* returnFcn = reverseArray(arr, sizeArr);
+    print(returnFcn, sizeArr);
+}
 
 /*This function accepts my defined constant array and the variable for the size of the array.
 
@@ -19,7 +25,7 @@ The postcondition is that the constant array has had its contents copied in reve
 the function then returns a pointer to the newly reversed array.
 */
 int* reverseArray(int const arr[], int sizeArr)
-{
+{   
     int* revArr = new int[sizeArr];
     int j = sizeArr;
     for (int i = 0; i < sizeArr; i++)
@@ -48,9 +54,4 @@ void print(int const arr[], int sizeArr)
     }
 }
 
-int main()
-{
-    int *returnFcn = reverseArray(arr, sizeArr);
-    print(returnFcn, sizeArr);
-}
 
